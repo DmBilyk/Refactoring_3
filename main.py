@@ -4,17 +4,25 @@ class User:
         self.password = ""
         self.name = ""
         self.orders = []
+        self.is_admin = False
 
     def register(self):
         self.name = input("Enter name: ")
         self.email = input("Enter email: ")
         self.password = input("Enter password: ")
+
+
+        admin_choice = input("Create as admin? (yes/no): ").lower()
+        if admin_choice == 'yes':
+            self.is_admin = True
+            print("Admin account created!")
+
         print("Registration successful!")
         return True
 
     def login(self, email, password):
         if email == self.email and password == self.password:
-            print(f"Welcome, {self.name}!")
+            print(f"Welcome, {'Admin' if self.is_admin else 'User'}, {self.name}!")
             return True
         else:
             print("Invalid credentials.")
@@ -33,6 +41,29 @@ class User:
     def place_order(self, order):
         self.orders.append(order)
         print("Order successfully placed!")
+
+    # Додаткові методи для адміністратора
+    def add_product(self, shop):
+        if not self.is_admin:
+            print("Only admin can add products!")
+            return None
+
+        product = Product().create_product()
+        shop.add_product(product)
+        return product
+
+    def remove_product(self, shop, product_name):
+        if not self.is_admin:
+            print("Only admin can remove products!")
+            return False
+
+        product = shop.find_product(product_name)
+        if product:
+            shop.products.remove(product)
+            print(f"Product {product_name} removed.")
+            return True
+        print(f"Product {product_name} not found.")
+        return False
 
 
 class Product:
@@ -70,6 +101,7 @@ class Product:
         return self.quantity >= requested_quantity
 
 
+# Решта класів залишаються без змін
 class Order:
     def __init__(self, user):
         self.user = user
@@ -204,22 +236,118 @@ def main():
     headphones = Product("Sony Headphones", 3500, 20, "Wireless headphones with noise cancellation")
     shop.add_product(headphones)
 
-    print("=== Register a new user ===")
-    user = shop.register_user()
+    current_user = None
 
-    shop.display_all_products()
+    while True:
+        print("\n=== Shop Management System ===")
+        print("1. Register New User")
+        print("2. Login")
+        print("3. Exit")
 
-    order = shop.create_order(user)
-    if order:
-        order.add_product(laptop, 1)
-        order.add_product(headphones, 2)
+        choice = input("Enter your choice (1-3): ")
 
-        print("\n=== Order details ===")
-        order.display_order_details()
+        if choice == '1':
+            print("\n--- User Registration ---")
+            new_user = shop.register_user()
+            if new_user:
+                print(f"Welcome, {new_user.name}!")
 
-        order.confirm_order()
+        elif choice == '2':
+            print("\n--- Login ---")
+            email = input("Enter email: ")
+            password = input("Enter password: ")
+            current_user = shop.login_user(email, password)
 
-        user.view_orders()
+            if current_user:
+                while True:
+                    print("\n=== User Menu ===")
+                    print("1. View Products")
+                    print("2. Search Products")
+                    print("3. Create Order")
+                    print("4. View My Orders")
+
+                    if current_user.is_admin:
+                        print("5. Add Product")
+                        print("6. Remove Product")
+                        print("7. Update Product")
+
+                    print("0. Logout")
+
+                    user_choice = input("Enter your choice: ")
+
+                    if user_choice == '1':
+
+                        shop.display_all_products()
+
+                    elif user_choice == '2':
+                        keyword = input("Enter search keyword: ")
+                        results = shop.search_products(keyword)
+
+                        if results:
+                            print("\nSearch Results:")
+                            for product in results:
+                                product.display_product()
+                                print("---")
+                        else:
+                            print("No products found.")
+
+                    elif user_choice == '3':
+                        order = shop.create_order(current_user)
+
+                        while True:
+                            shop.display_all_products()
+                            product_name = input("Enter product name to add (or 'done' to finish): ")
+
+                            if product_name.lower() == 'done':
+                                break
+
+                            product = shop.find_product(product_name)
+                            if product:
+                                quantity = int(input(f"Enter quantity for {product_name}: "))
+                                order.add_product(product, quantity)
+                            else:
+                                print("Product not found.")
+
+                        if order.products:
+                            order.confirm_order()
+
+                    elif user_choice == '4':
+                        current_user.view_orders()
+
+                    elif current_user.is_admin:
+                        if user_choice == '5':
+                            current_user.add_product(shop)
+
+                        elif user_choice == '6':
+                            product_name = input("Enter product name to remove: ")
+                            current_user.remove_product(shop, product_name)
+
+                        elif user_choice == '7':
+                            product_name = input("Enter product name to update: ")
+                            product = shop.find_product(product_name)
+                            if product:
+                                product.update_product()
+                            else:
+                                print("Product not found.")
+
+                    elif user_choice == '0':
+                        current_user = None
+                        break
+
+                    else:
+                        print("Invalid choice. Please try again.")
+
+        elif choice == '3':
+            # Exit
+            print("Thank you for using Shop Management System. Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
