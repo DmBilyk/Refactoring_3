@@ -1,5 +1,9 @@
+
+
+
 class User:
     def __init__(self):
+
         self.email = ""
         self.password = ""
         self.name = ""
@@ -7,10 +11,10 @@ class User:
         self.is_admin = False
 
     def register(self):
+
         self.name = input("Enter name: ")
         self.email = input("Enter email: ")
         self.password = input("Enter password: ")
-
 
         admin_choice = input("Create as admin? (yes/no): ").lower()
         if admin_choice == 'yes':
@@ -29,6 +33,7 @@ class User:
             return False
 
     def view_orders(self):
+
         if not self.orders:
             print("You don't have any orders yet.")
             return
@@ -39,11 +44,12 @@ class User:
             order.display_order_details()
 
     def place_order(self, order):
+
         self.orders.append(order)
         print("Order successfully placed!")
 
-    # Додаткові методи для адміністратора
     def add_product(self, shop):
+
         if not self.is_admin:
             print("Only admin can add products!")
             return None
@@ -53,6 +59,7 @@ class User:
         return product
 
     def remove_product(self, shop, product_name):
+
         if not self.is_admin:
             print("Only admin can remove products!")
             return False
@@ -67,6 +74,7 @@ class User:
 
 
 class Product:
+
     def __init__(self, name="", price=0, quantity=0, description=""):
         self.name = name
         self.price = price
@@ -74,6 +82,7 @@ class Product:
         self.description = description
 
     def create_product(self):
+
         self.name = input("Enter product name: ")
         self.price = float(input("Enter product price: "))
         self.quantity = int(input("Enter product quantity: "))
@@ -82,12 +91,14 @@ class Product:
         return self
 
     def display_product(self):
+
         print(f"Product: {self.name}")
         print(f"Price: {self.price}")
         print(f"Available quantity: {self.quantity}")
         print(f"Description: {self.description}")
 
     def update_product(self):
+
         print(f"Updating product: {self.name}")
         self.name = input(f"New name (current: {self.name}): ") or self.name
         new_price = input(f"New price (current: {self.price}): ")
@@ -98,17 +109,21 @@ class Product:
         print("Product successfully updated!")
 
     def is_available(self, requested_quantity=1):
+
         return self.quantity >= requested_quantity
 
 
-# Решта класів залишаються без змін
 class Order:
+
+
     def __init__(self, user):
+
         self.user = user
         self.products = []
         self.status = "New"
 
     def add_product(self, product, quantity=1):
+
         if not self.user:
             print("You need to log in to add a product.")
             return False
@@ -128,6 +143,7 @@ class Order:
         return True
 
     def remove_product(self, product_name):
+
         for i, (product, quantity) in enumerate(self.products):
             if product.name == product_name:
                 del self.products[i]
@@ -138,12 +154,14 @@ class Order:
         return False
 
     def calculate_total(self):
+
         total = 0
         for product, quantity in self.products:
             total += product.price * quantity
         return total
 
     def confirm_order(self):
+
         if not self.products:
             print("Cannot confirm an empty order")
             return False
@@ -169,12 +187,15 @@ class Order:
 
 
 class Shop:
+
     def __init__(self):
+
         self.users = []
         self.products = []
         self.orders = []
 
     def register_user(self):
+
         user = User()
         if user.register():
             self.users.append(user)
@@ -182,6 +203,7 @@ class Shop:
         return None
 
     def login_user(self, email, password):
+
         for user in self.users:
             if user.email == email:
                 return user if user.login(email, password) else None
@@ -189,15 +211,18 @@ class Shop:
         return None
 
     def add_product(self, product):
+
         self.products.append(product)
 
     def find_product(self, name):
+
         for product in self.products:
             if product.name.lower() == name.lower():
                 return product
         return None
 
     def search_products(self, keyword):
+
         results = []
         for product in self.products:
             if keyword.lower() in product.name.lower() or keyword.lower() in product.description.lower():
@@ -205,6 +230,7 @@ class Shop:
         return results
 
     def create_order(self, user):
+
         if not user:
             print("You need to log in to create an order.")
             return None
@@ -215,6 +241,7 @@ class Shop:
         return order
 
     def display_all_products(self):
+
         if not self.products:
             print("No products available.")
             return
@@ -223,9 +250,11 @@ class Shop:
         for i, product in enumerate(self.products, 1):
             print(f"{i}. {product.name} - {product.price} (quantity: {product.quantity})")
 
-
 def main():
+
+
     shop = Shop()
+
 
     laptop = Product("HP Laptop", 25000, 10, "Powerful laptop for work")
     shop.add_product(laptop)
@@ -235,6 +264,7 @@ def main():
 
     headphones = Product("Sony Headphones", 3500, 20, "Wireless headphones with noise cancellation")
     shop.add_product(headphones)
+
 
     current_user = None
 
@@ -246,17 +276,20 @@ def main():
 
         choice = input("Enter your choice (1-3): ")
 
+
         if choice == '1':
             print("\n--- User Registration ---")
             new_user = shop.register_user()
             if new_user:
                 print(f"Welcome, {new_user.name}!")
 
+
         elif choice == '2':
             print("\n--- Login ---")
             email = input("Enter email: ")
             password = input("Enter password: ")
             current_user = shop.login_user(email, password)
+
 
             if current_user:
                 while True:
@@ -338,16 +371,12 @@ def main():
                         print("Invalid choice. Please try again.")
 
         elif choice == '3':
-            # Exit
+
             print("Thank you for using Shop Management System. Goodbye!")
             break
 
         else:
             print("Invalid choice. Please try again.")
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
